@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.GenericGenerator;
 
 import java.util.UUID;
 
@@ -11,18 +12,26 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "fax_user")
 public class User {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(
+            name = "UUID",
+            strategy = "org.hibernate.id.UUIDGenerator"
+    )
+    @Column(updatable = false, nullable = false)
     private UUID id;
 
     private String username;
-    private String password;
-    private String email;
     private String firstName;
     private String lastName;
 
-    @Enumerated(EnumType.STRING) // Voeg dit toe zodat Role mooi als tekst wordt opgeslagen
+    private String password;
+    private String email;
+    private String phoneNumber;
+
+    @Enumerated(EnumType.STRING)
     private Role role;
 }

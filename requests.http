@@ -1,0 +1,42 @@
+###
+POST http://localhost:8080/api/users
+Content-Type: application/json
+
+{
+  "username": "fruitloop",
+  "password": "securepassword",
+  "email": "amirs@example.com",
+  "firstName": "Amir",
+  "lastName": "Boss",
+  "role": "USER"
+}
+###
+GET http://localhost:8080/api/users
+
+###
+DELETE http://localhost:8080/api/users
+Content-Type: application/json
+
+{
+  "id": "de5b1cb6-e179-4bac-b213-99edfda41ec4",
+  "username": "fruitloop",
+  "password": "securepassword",
+  "email": "amirs@example.com",
+  "firstName": "Amir",
+  "lastName": "Boss",
+  "role": "USER"
+}
+
+###
+PUT http://localhost:8080/api/users/69c16c80-50a2-4c93-a039-e51d07b24a88
+Content-Type: application/json
+
+{
+  "username": "fruitloopyyy",
+  "password": "securepassword",
+  "email": "amirs@example.com",
+  "phoneNumber": "0612345678",
+  "firstName": "Amir",
+  "lastName": "Boss",
+  "role": "USER"
+}
