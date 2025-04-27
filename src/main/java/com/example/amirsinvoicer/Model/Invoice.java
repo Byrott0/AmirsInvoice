@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.GenericGenerator;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -17,6 +18,11 @@ public class Invoice {
 
     @Id
     @GeneratedValue
+    @GenericGenerator(
+            name = "UUID",
+            strategy = "org.hibernate.id.UUIDGenerator"
+    )
+    @Column(updatable = false, nullable = false)
     private UUID id;
 
     private String invoiceNumber; // Bijvoorbeeld: INV-2024-0001
@@ -24,9 +30,7 @@ public class Invoice {
     private LocalDate issueDate;  // Datum waarop factuur gemaakt is
     private LocalDate dueDate;    // Betaaldatum (bijv. 30 dagen na issueDate)
 
-    private BigDecimal totalAmount; // Totaalbedrag in EUR of USD
-    private BigDecimal taxAmount;   // BTW bedrag
-    private BigDecimal subTotal;    // Bedrag zonder belasting
+    private BigDecimal totalAmount; // Totaalbedrag in EUR
 
     private String description;    // Algemene omschrijving (bijv. "Website Development Services")
 
