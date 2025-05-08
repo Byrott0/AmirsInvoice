@@ -1,5 +1,6 @@
 package com.example.amirsinvoicer.Service;
 
+import com.example.amirsinvoicer.Model.Client;
 import com.example.amirsinvoicer.Model.Invoice;
 import com.example.amirsinvoicer.Repository.InvoiceRepository;
 import org.springframework.stereotype.Service;
@@ -40,5 +41,8 @@ public class InvoiceService {
         invoice.setTotalAmount(update.getTotalAmount());
         invoice.setDescription(update.getDescription());
         invoiceRepository.save(invoice);
+    }
+    public List<Invoice> getInvoicesByClient(Client client) {
+        return invoiceRepository.findAllByClient(client);
     }
 }
