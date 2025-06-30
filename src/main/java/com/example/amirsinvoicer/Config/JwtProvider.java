@@ -2,9 +2,12 @@ package com.example.amirsinvoicer.Config;
 import io.jsonwebtoken.*;
 import org.springframework.stereotype.Component;
 import java.util.Date;
+import io.jsonwebtoken.security.Keys;
+
 @Component
 public class JwtProvider {
-    private final String jwtSecret = "geheimeSleutel123";
+    private final String jwtSecret = "k7uS4pL9wXzY2vRtMnQ1eFgHbDcAaZqW";
+
     private final long jwtExpiration = 86400000; // 1 dag
 
     // hier wordt de token met een gebruikersnaam gemaakt
@@ -12,9 +15,10 @@ public class JwtProvider {
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
-                .signWith(SignatureAlgorithm.HS256, jwtSecret)
+                .setExpiration(new Date(System.currentTimeMillis() + 86400000))
+                .signWith(Keys.hmacShaKeyFor(jwtSecret.getBytes()), SignatureAlgorithm.HS256)
                 .compact();
+
     }
 
     //haal de gebruikersnaam uit een token
