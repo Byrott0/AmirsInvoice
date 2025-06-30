@@ -23,6 +23,8 @@ public class UserService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Gebruiker niet gevonden"));
+        System.out.println("Login check:" + username);
+        System.out.println("Opgehaald wachtwoord (bcrypt): " + user.getPassword());
 
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
@@ -42,6 +44,11 @@ public class UserService implements UserDetailsService {
     }
 
     public void insertUser(User user) {
+        System.out.println("🔍 Inserting user:");
+        System.out.println("username: " + user.getUsername());
+        System.out.println("password: " + user.getPassword());
+        System.out.println("role: " + user.getRole());
+
         user.setId(null);
         userRepository.save(user);
     }

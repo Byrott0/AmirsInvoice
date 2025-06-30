@@ -4,7 +4,6 @@ import com.example.amirsinvoicer.Config.JwtProvider;
 import com.example.amirsinvoicer.Dto.authRequest;
 import com.example.amirsinvoicer.Dto.authResponse;
 import com.example.amirsinvoicer.Model.User;
-import com.example.amirsinvoicer.Controller.AuthController;
 import com.example.amirsinvoicer.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -25,28 +24,34 @@ public class AuthController {
     private JwtProvider jwtProvider;
 
     @Autowired
-    private UserService userService;
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private UserService userService;
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody User user) {
+        System.out.println("Registratie ontvangen voor: " + user.getUsername());
+
+        // Versleutel wachtwoord
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+        // Opslaan
         userService.insertUser(user);
+
+        System.out.println("Gebruiker opgeslagen in DB.");
         return ResponseEntity.ok("Gebruiker succesvol geregistreerd");
     }
 
     @PostMapping("/login")
     public ResponseEntity<authResponse> login(@RequestBody authRequest request) {
-        // stap 1: controler gebruikersnaam en wachtwoord
+        System.out.println("Login voor: " + request.getUsername());
+
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
         );
 
-        // stap 2, token aanmaken
         String token = jwtProvider.generateToken(request.getUsername());
-        // stap 3, token wordt teruggegeven
         return ResponseEntity.ok(new authResponse(token));
     }
 }

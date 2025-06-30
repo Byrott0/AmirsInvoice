@@ -1,3 +1,6 @@
+
+// http://localhost:8080/swagger-ui/index.html De locatie om de APIs te zien en te testen
+
 ###
 POST http://localhost:8080/api/users
 Content-Type: application/json
