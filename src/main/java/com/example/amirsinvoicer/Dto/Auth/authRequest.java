@@ -1,4 +1,4 @@
-package com.example.amirsinvoicer.Dto;
+package com.example.amirsinvoicer.Dto.Auth;
 import lombok.Data;
 @Data
 public class authRequest {

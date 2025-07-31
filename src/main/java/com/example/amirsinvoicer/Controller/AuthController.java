@@ -1,57 +1,90 @@
 package com.example.amirsinvoicer.Controller;
 
-import com.example.amirsinvoicer.Config.JwtProvider;
-import com.example.amirsinvoicer.Dto.authRequest;
-import com.example.amirsinvoicer.Dto.authResponse;
-import com.example.amirsinvoicer.Model.User;
+
+import com.example.amirsinvoicer.Dto.Auth.*;
+import com.example.amirsinvoicer.Dto.Auth.IdCheck;
+import com.example.amirsinvoicer.Dto.Auth.authRequest;
+import com.example.amirsinvoicer.Dto.UserCreateDto;
+import com.example.amirsinvoicer.Model.ApiResponse;
+import com.example.amirsinvoicer.Model.*;
+import com.example.amirsinvoicer.Service.JwtService;
 import com.example.amirsinvoicer.Service.UserService;
+import com.example.amirsinvoicer.Service.AuthService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+import java.util.UUID;
+
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping(value = "/api/v1/auth")
+@RequiredArgsConstructor
 public class AuthController {
+    private final AuthService authenticationService;
+    private final JwtService jwtService;
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
-
-    @Autowired
-    private JwtProvider jwtProvider;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private UserService userService;
-
-    @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody User user) {
-        System.out.println("Registratie ontvangen voor: " + user.getUsername());
-
-        // Versleutel wachtwoord
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-
-        // Opslaan
-        userService.insertUser(user);
-
-        System.out.println("Gebruiker opgeslagen in DB.");
-        return ResponseEntity.ok("Gebruiker succesvol geregistreerd");
+    @GetMapping("/checkId/{id}")
+    public ApiResponse<IdCheck> checkId(@PathVariable String id, Authentication authentication) {
+        return new ApiResponse<>(new IdCheck(this.authenticationService.isIdOfSelf(UUID.fromString(id), authentication)), HttpStatus.OK);
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<authResponse> login(@RequestBody authRequest request) {
-        System.out.println("Login voor: " + request.getUsername());
+    @PostMapping(value = "/login")
+    public ApiResponse<?> login(@Valid @RequestBody authRequest loginDTO, HttpServletResponse response) {
+        authenticationService.login(loginDTO.getUsername(), loginDTO.getPassword(), response);
+        return new ApiResponse<>("Login succes", HttpStatus.OK);
+    }
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+    // Voor testing doeleinden
+    @PostMapping(value = "/register")
+    public ApiResponse<authResponse> register(@RequestBody UserCreateDto userCreateDTO) {
+        Optional<String> tokenResponse = authenticationService.register(
+                userCreateDTO.getUsername(),
+                userCreateDTO.getPassword()
+
         );
 
-        String token = jwtProvider.generateToken(request.getUsername());
-        return ResponseEntity.ok(new authResponse(token));
+        if (tokenResponse.isEmpty()) {
+            return new ApiResponse<>("User already exists", HttpStatus.BAD_REQUEST);
+        }
+
+        String token = tokenResponse.get();
+        return new ApiResponse<>(new authResponse(token));
+    }
+
+    @GetMapping(value = "/authenticated")
+    public ApiResponse<AuthCheckResponseDto> checkAuthenticated(HttpServletRequest request, HttpServletResponse response) {
+        AuthCheckResponseDto authCheckResponseDTO = this.authenticationService.checkAuthenticated(request);
+
+        if (!authCheckResponseDTO.isAuthenticated()) {
+            // Clears the cookies in case the browser still has them stored whilst they're invalid
+            Cookie cookie = this.authenticationService.getEmptyCookie("token");
+            response.addCookie(cookie);
+        }
+
+        return new ApiResponse<>(authCheckResponseDTO, HttpStatus.OK);
+    }
+
+    @PostMapping("/logout")
+    public void logout(HttpServletResponse response) {
+        response.addCookie(this.authenticationService.logout());
+    }
+
+    @GetMapping("/isAdmin")
+    public ApiResponse<AdminCheckResponseDto> isAdmin() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ADMIN"));
+        return new ApiResponse<>(new AdminCheckResponseDto(isAdmin), HttpStatus.OK);
     }
 }
