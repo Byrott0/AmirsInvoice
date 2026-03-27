@@ -43,7 +43,7 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- OpenAPI / Swagger dependency voor Spring Boot 3 -->
+        <!-- OpenAPI / Swagger dependency voor Spring Boot 3  -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
